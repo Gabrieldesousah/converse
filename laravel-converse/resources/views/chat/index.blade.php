@@ -7,8 +7,9 @@
 
 <br><br><br>
         <div class="col-lg-3" style="margin: 2% auto;">
-            @foreach($chats as $c)
-                <a href="chat/{{ $c->id }}">Chat {{ $c->id }} criado por {{ $c->user_id }}</a>
+
+            @foreach($chats as $c)            
+                <a href="chat/{{ $c->contact_uid }}">Chat {{ $c->contact_uid }}</a>
                 <br>
             @endforeach
         </div>

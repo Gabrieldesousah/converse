@@ -12,10 +12,14 @@ class MessagesController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
-    {
-        //
-    }
+    public function index() {
+      $msg[0] = "This is a simple message.";
+      $msg[1] = "Outra mensagem";
+      $msg[2] = "A terceira.";
+      $msg[3] = "A quarta.";
+      $msg[4] = "quinta....";
+      return response()->json(array('msg'=> $msg), 200);
+   }
 
     /**
      * Show the form for creating a new resource.

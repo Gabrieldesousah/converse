@@ -66,8 +66,7 @@ class UsersController extends Controller
         $user = DB::table('users')
             ->where("name", "like", "%$search%")
             ->orWhere("email", "like", "%$search%")
-            ->orWhere("course", "like", "%$search%")
-            ->orWhere("college", "like", "%$search%")
+            ->orWhere("phone", "like", "%$search%")
             ->orWhere("id", "$search")
             ->get();
 
@@ -131,9 +130,7 @@ class UsersController extends Controller
         $user = User::find($user_id);
         $user->name     = $request->name;
         $user->email    = $request->email;
-        $user->college  = $request->college;
-        $user->area     = $request->area;
-        $user->course   = $request->course;
+        $user->phone  = $request->phone;
         $user->state    = $request->state;
         $user->city     = $request->city;
         $user->country  = "Brazil";

@@ -19,12 +19,21 @@ Route::get('/dashboard', 'DashboardController@index');
 
 Route::get('/chat', 'ChatController@index');
 Route::get('/chat/{chat_id}', 'ChatController@show');
-Route::post('/chat/{chat_id}', 'ChatController@store');
+Route::post('/chat/{chat_id}', 'ChatController@store_wpp');
 Route::get('/chat/store', 'ChatController@store');
 Route::post('/chat/store', 'ChatController@store');
-Route::get('/chat/server', 'ChatController@server');
-Route::post('/chat/server', 'ChatController@server');
+Route::post('/wpp_receive', 'ChatController@wpp_receive');
+Route::get('/server/{chat}', 'ChatController@server');
+Route::post('/server/{chat}', 'ChatController@server');
 Route::get('/chat/history/{chat_id}', 'ChatController@history');
+
+Route::get('/ajax', function(){
+	return  view('chat.message');
+});
+Route::get('/getmsg', 'MessagesController@index');
+//Por algum motivo nãoe stá dando certo enviar por post
+//Route::post('/getmsg', 'MessagesController@index');
+
 
 
 
