@@ -26,7 +26,7 @@ class User extends Authenticatable
 
     //tem q terminar de preencher aqui
     protected $fillable = [
-        'name', 'email', 'password', 'area', 'course', 'college', 'state', 'city'
+        'name', 'email', 'password', 'area', 'course', 'college', 'state', 'city', 'updated_at', 'status'
     ];
 
     /**

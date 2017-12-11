@@ -21,9 +21,8 @@ class ChatController extends Controller
     public function index()
     {
 
-        $phones = DB::select('SELECT DISTINCT contact_uid FROM messages ORDER BY `created_at` DESC');
-//dd($phones);
-        
+        $phones = DB::select('SELECT DISTINCT contact_uid FROM messages2 ORDER BY `created_at` DESC');
+        //dd($phones);
         //$chat = new Chat;
         //$chats = $chat::all();
 
@@ -39,62 +38,44 @@ class ChatController extends Controller
         $contact = $_POST["contact"];
         $message = $_POST["message"];
 
-        
-        $msg = new Message();    
-
-        $msg->message       = $message["body"]["text"];
-        $msg->event         = $event;            
-        $msg->token         = $token;            
-        $msg->contact_uid   = $contact["uid"];            
-        $msg->contact_name  = $contact["name"];            
-        $msg->contact_type  = $contact["type"];            
-        $msg->message_dtm   = $message["dtm"];            
-        $msg->message_uid   = $message["uid"];            
-        $msg->message_cuid  = $message["cuid"];            
-        $msg->message_dir   = $message["dir"];            
-        $msg->message_type  = $message["type"];            
-        $msg->message_ack   = $message["ack"];
-
         $msg2 = new Message2();
-        $msg2 = $msg;
-        $msg2->save();
+        
+        $msg2->message       = isset($message["body"]["text"]) ? $message["body"]["text"] : "";
+        $msg2->event         = $event;            
+        $msg2->token         = $token;            
+        $msg2->contact_uid   = $contact["uid"];            
+        $msg2->contact_name  = $contact["name"];            
+        $msg2->contact_type  = $contact["type"];            
+        $msg2->message_dtm   = $message["dtm"];            
+        $msg2->message_uid   = $message["uid"];            
+        $msg2->message_cuid  = $message["cuid"];            
+        $msg2->message_dir   = $message["dir"];            
+        $msg2->message_type  = $message["type"];            
+        $msg2->message_ack   = $message["ack"];
+
+        $msg2->message_body_url = isset($message["body"]["url"]) ? $message["body"]["url"] : "";
+        $msg2->message_body_size = isset($message["body"]["size"]) ? $message["body"]["size"] : "";
+        $msg2->message_body_thumb = isset($message["body"]["thumb"]) ? $message["body"]["thumb"] : "";
+        $msg2->message_body_caption = isset($message["body"]["caption"]) ? $message["body"]["caption"] : "";
+        $msg2->message_body_mimetype = isset($message["body"]["mimetype"]) ? $message["body"]["mimetype"] : "";
 
         $user = new User();
-        $find_user = $user::where("phone", $msg->contact_uid)->get();
+        $find_user = $user::where("phone", $msg2->contact_uid)->get();
 
         if(!isset($find_user[0])){
-            $user->name = $contact["name"];
-            $user->phone = $msg->contact_uid;
+            $user->name = $msg2->contact_name;
+            $user->phone = $msg2->contact_uid;
             $user->email = "";
-            $user->type = $msg->contact_type;
+            $user->type = $msg2->contact_type;
 
             if($user->save()){
-                $msg->user_id = $user->id;                
+                $msg2->user_id = $user->id;                
             }
         } else {
-            $msg->user_id = $find_user[0]->id;
+            $msg2->user_id = $find_user[0]->id;
         }
 
-        $chat = new Chat();
-        $find_chat = $chat::where("user_id", $msg->user_id)->get();
-
-        //dd(isset($find_chat[0]));
-
-        if(!isset($find_chat[0])){
-            $chat->user_id = $msg->user_id;
-            $chat->phone_user = $msg->contact_uid;
-            $chat->setor = 1;
-            $chat->canal = 1;
-            $chat->status = 0;
-
-            if($chat->save()){
-                $msg->chat_id = $chat->id;                
-            }
-        } else {
-            $msg->chat_id = $find_chat[0]->id;
-        }
-        
-        $msg->save();
+        $msg2->save();
         
         return "true";     
     }
@@ -115,33 +96,6 @@ class ChatController extends Controller
         //
     }
 
-/*
-    public function wpp_receive(){
-
-        $event = $_POST["event"];
-        $token = $_POST["token"];
-        $contact = $_POST["contact"];
-        $message = $_POST["message"];
-        
-        $chat = new Message();
-
-        //$chat->message =    $event . "<br>" .
-        //                    $token . "<br>" .
-        //                    $contact  . "<br>" .
-        //                    $message["body"];
-        
-        $chat->message =   $_POST["message"]["body"];
-                            
-        
-        $chat->user_id = 2222;
-        $chat->chat_id = 1;
-        $chat->status = 0;
-
-        $chat->save();
-        return "true";          
-    }
-*/
-
     /**
      * Store a newly created resource in storage.
      *
@@ -150,36 +104,26 @@ class ChatController extends Controller
      */
     public function store_wpp(Request $request, $chat_id)
     {   
-        if(!Auth::user()->id){
-            die();
-        }
-        
-        $text = (null !== $request->input('usermsg')) ? $request->input('usermsg') : '';
+        //dd($request);            
+        $text = $request->input('usermsg');
 
         //$data = array($id, $_SESSION['name'], stripslashes(htmlspecialchars($text)))
 
-        if ($text === ''){
-            return;
-        }
-
-        $chat = new Chat();
-        $find_chat = $chat::where("id", $chat_id)->get();
-        $phone_user = $find_chat[0]->phone_user;
-
-        $message = new Message();
+        $message = new Message2();
         $message->user_id = Auth::user()->id;
-        $message->chat_id = $chat_id;
+        $message->contact_uid = $chat_id;
         $message->status = 0;
+        $message->message_dir = "s";//output of site
         $message->message = $text;
-
+        
             
         $CURLOPT_URL = "https://www.waboxapp.com/api/send/chat";
         $CURLOPT_SSL_VERIFYPEER =  false;
         $CURLOPT_SSL_VERIFYHOST = false;
-        $API_token  = "e8ad314e8f9922edf98eeda27d79d8725a2574c4da8fb";
+        $API_token  = "2c6087138dc7944fafa9f57f4d96bb6a5a2576c308057";
         $phone_from = "556286073728";
         //$phone_to = "556286073728";
-        $phone_to   = $phone_user;
+        $phone_to   = $chat_id;
         $custom_uid = "msg-converse-".time().rand(5,15);
 
 
@@ -197,29 +141,11 @@ class ChatController extends Controller
 
         $response = curl_exec($ch); 
         $info = curl_getinfo($ch);
-        curl_close ($ch);        
-        
-        //dd($response);
-        //$text = json_encode($response);
-        //$text = json_decode($response);
-        //dd($text->error);
-        /*
-        $msg2 = new Message2();
-        if( isset($text->success) ){
-            $msg->status = $text->success;
-        }
-        if( isset($text->error) ){
-            $msg->error = $text->error;
-        }
-        if( isset($text->custom_uid) ){
-            $msg->custom_id = $text->custom_uid;
-        }
-        $msg2->save();
-        */
+        curl_close ($ch);
 
-        $message->save();
+        //$message->save();
 
-        return ;
+        return "true";
     }
 
     public function store_site(Request $request, $chat_id)
@@ -244,16 +170,17 @@ class ChatController extends Controller
      * @param  \App\Chat  $chat
      * @return \Illuminate\Http\Response
      */
-    public function server(Chat $chat = null)
+    public function server($chat_id)
     {
-        if( $chat !== null ){
-            $message = new Message();
-            $messages = $message->where('chat_id', $chat->id)->orderby('created_at', 'desc')->get();
+        $messages = DB::select('SELECT * from `messages2` where contact_uid = "'.$chat_id.'"   ORDER BY `created_at` DESC limit 100');
+        return response()->json(array('msg' => $messages), 200);
+    }
 
-            //return response()->json($messages);
-            //return json_decode( $messages->toJson());
-            return response()->json(array('msg'=> $messages), 200);
-        }
+
+    public function server_chats()
+    {
+        $phones = User::orderBy("updated_at", "ASC")->get();
+        return response()->json(array('phones'=> $phones), 200);
     }
 
     public function history(Chat $chat, $chat_id)
@@ -262,32 +189,16 @@ class ChatController extends Controller
         $messages = $message->where('chat_id', $chat_id)->get();
 
         return view('chat.history', ['messages' => $messages]);
-
     }
 
-    public function show(Chat $chat, $id)
+    public function show(Chat $chat, $chat_id)
     {
+        $user = User::where("phone", $chat_id)
+        ->update(['status' => 1]);
+        //dd($user);
 
-        $phones = DB::select('SELECT DISTINCT contact_uid FROM messages ORDER BY `created_at` DESC');
-        
-        $this->middleware('auth');
-        if(!Auth::user())
-        {
-            return redirect('/login?url=chat');
-        }
-
-        $methods = new ChatController;
-
-        //Tenho que remover isso e deixar apenas o distinct
-        $chat = new Chat;
-        $chats = $chat::all();
-        $find_chat = $chat::find($id);
-
-        return  view('chat.show', [
-            'messages' => $methods->server($find_chat),
-            'methods'  => $methods,
-            'chat_id'  => $id,
-            'chats'    => $phones
+        return  view('chat.show', [ 
+            'chat_id'  => $chat_id
         ]);
     }
 
